@@ -55,7 +55,7 @@ def integracao_matriz():
 
 def integracao_separacao():
     SAMPLE_SPREADSHEET_ID = '1NHsGMo8UpNEtZLg2WSBwV9xiKNLJeeMOF_0O7f8mUDU'
-    SAMPLE_RANGE_NAME = 'SEPARACAO!A2:L'
+    SAMPLE_RANGE_NAME = 'SEPARACAO!A2:M'
     creds = None
    
     if os.path.exists('token.json'):
@@ -83,6 +83,8 @@ def integracao_separacao():
         if not values:
             print('No data found.')
             return
+
+        
         return values
     
     except HttpError as err:
@@ -187,9 +189,7 @@ def inserir_dados(lista_sep):
              '0',
              ])
             range+=1
-        #for row in dados_sep:
-            #print(row[0],row[1],row[2],row[3],row[4],row[5])
-
+        
         result = sheet.values().update(spreadsheetId=SAMPLE_SPREADSHEET_ID,
                                     range=new_range, 
                                     valueInputOption='USER_ENTERED',
@@ -232,14 +232,14 @@ def atualizar_estoque():
         lista_vazia = []
         for row in planilha:
             sep_ant.append([row[0], row[1]])
-        for i in range(0,2999):
+        for i in range(0,5977):
             lista_vazia.append(['', ''])  
         
         #print(f'Quantidade de linhas: {len(planilha)+1}')
         new_range = 'ESTOQUE!A2'
                             
         result = sheet.values().update(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                    range='ESTOQUE!A2:B3000', 
+                                    range='ESTOQUE!A2:B5978', 
                                     valueInputOption='USER_ENTERED',
                                     body={'values': lista_vazia}).execute()
         
@@ -278,6 +278,40 @@ def atualizar_estoque():
     except HttpError as err:
         print(err)
     
+def integracao_pedidos():
+    SAMPLE_SPREADSHEET_ID = '1NHsGMo8UpNEtZLg2WSBwV9xiKNLJeeMOF_0O7f8mUDU'
+    SAMPLE_RANGE_NAME = 'PEDIDOS!A1:C'
+    creds = None
+   
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+   
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'client_secret.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+       
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                                    range=SAMPLE_RANGE_NAME).execute()
+        #salvando os valores localmente                          
+        values = result.get('values', [])
+
+        if not values:
+            print('No data found.')
+            return
+        return values
+    
+    except HttpError as err:
+        print(err)
 
 if __name__ == '__main__':
     cp = sg.cprint
@@ -296,4 +330,4 @@ if __name__ == '__main__':
         if event == sg.WIN_CLOSED or event == 'Sair':
             break
         elif event.startswith('Executar'):
-            atualizar_estoque()
+            integracao_separacao()

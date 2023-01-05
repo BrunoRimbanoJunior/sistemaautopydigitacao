@@ -3,10 +3,12 @@ from time import sleep
 from login_bling import start
 import PySimpleGUI as sg
 import threading
+from integracao_planilhas import integracao_separacao
+from datetime import datetime
+from salvar_pedidos import salvar_pedidos
 
-
-
-def digitar_pedidos_online(window, file):
+def digitar_pedidos_online(window):
+    file = salvar_pedidos(window)
     cp = sg.cprint
     status = ''
     window.write_event_value('-THREAD-', (threading.current_thread().name, status))
@@ -15,7 +17,7 @@ def digitar_pedidos_online(window, file):
 
 
     start.iniciar()
-    sleep(5)
+    start.tela_de_pedidos()
     cp(f'Arquivo excel selecionado: {file}')
     lista_pedidos = []
     lista_pedidos2 = []
@@ -70,7 +72,7 @@ def digitar_pedidos_online(window, file):
                 oc = str(item[4])
                 #compara o numero das ordens, se for igual ou for o primeiro item imprime
                 if oc == oc_ant or cont == 1:
-                #login_bling.start.iniciar()
+                
                     sleep(2)
                     qtd = float(item[2])
                     valor = float(item[3])
@@ -120,3 +122,6 @@ def digitar_pedidos_online(window, file):
 
    # start.digitar_itens()
     start.fechar_browse()
+
+
+ 

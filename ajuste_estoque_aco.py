@@ -6,8 +6,8 @@ import PySimpleGUI as sg
 
 
 
-def digitar_itens(window, file):
-    condicao = '+'
+def ajuste_estoque(window, file):
+    condicao = '-'
     img_loc_sys_aco = './IMAGES/acerto_estoque.png'
     cp = sg.cprint
     status=''
@@ -115,5 +115,5 @@ if __name__ == '__main__':
             else:
                 pyautogui.click(loc_bt_inserir)
                 file = './arquivos/ajuste_estoque.xlsx'
-                threading.Thread(target=digitar_itens, args=(window, file), daemon=True).start()
+                threading.Thread(target=ajuste_estoque, args=(window, file), daemon=True).start()
         

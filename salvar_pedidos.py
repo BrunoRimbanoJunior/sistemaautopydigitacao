@@ -2,7 +2,7 @@ from integracao_planilhas import integracao_separacao
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from dig_pedido_bling_seleniun import digitar_pedidos_online
+#from dig_pedido_bling_seleniun import digitar_pedidos_online
 import threading
 import PySimpleGUI as sg
 
@@ -20,33 +20,34 @@ def salvar_pedidos(window):
     lista = []
     data = datetime.now().strftime('%d%m%Y_%H%M')
     file = './PEDIDOS/PEDIDOS_RETROGLASS_'+data+'.xlsx'
+    #filtra o status de não separado
     for row in planilha:
         if row[11]=='0':
-            lista.append([row[7], row[3], row[4], row[5], row[8], row[11]])
+            lista.append([row[7], row[3], row[4], row[5], row[8], row[11], row[2], row[12]])
 
     
 
-    df = pd.DataFrame(lista, columns= ['CLIENTE','CODIGO', 'SEPARACAO', 'PRECO VENDA', 'PED', 'STATUS'])
+    df = pd.DataFrame(lista, columns= ['CLIENTE','CODIGO', 'SEPARACAO', 'PRECO VENDA', 'PED', 'STATUS', 'COD_CLIENTE', 'COD_VENDEDOR'])
     df['SEPARACAO'] = pd.to_numeric(df['SEPARACAO'], errors='coerce')
     df['PRECO VENDA'] = df['PRECO VENDA'].str.replace(',', '.')
     df['PRECO VENDA'] = pd.to_numeric(df['PRECO VENDA'], errors='coerce')
 
     df.to_excel(file, index=False)
-    cp('Dados baixados....')
-#modulo responsavel em digitar os pedidos no bling
+    #cp('Dados baixados....')
+    #modulo responsavel em digitar os pedidos no bling
     # digita = input('Digitar pedidos? S/N').upper()
     # if digita == 'S':
     #     digitar_pedidos_online(file)
     # else:
     #     exit
-
-    # return file
-    cp('Iniciando conexao com Sistema Bling.....')
+    cp('Dados salvos')
+    return file
+    #cp('Iniciando conexao com Sistema Bling.....')
     #*********************alteração temporaria para teste*******************************
-    threading.Thread(target=digitar_pedidos_online, args=(window, file,), daemon=True).start()
+    #threading.Thread(target=digitar_pedidos_online, args=(window, file,), daemon=True).start()
     
     #digitar_pedidos_online(file)
-    cp('Pedidos Finalizados.........')
+    #cp('Pedidos Finalizados.........')
 if __name__ == '__main__':
     size_btn = (50,1)
     layout = [[sg.Push(), sg.Button('Executar', button_color=('yellow', 'blue'), size=size_btn, font='bold'), sg.Push()]]

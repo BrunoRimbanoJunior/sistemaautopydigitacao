@@ -12,17 +12,14 @@ import PySimpleGUI as sg
 
 class Login:
     def __init__(self):
-        
-       
-
         self.browser = ''
         self.chrome_options = Options()
-        self.chrome_options.add_argument('--disable-extensions')
-        self.chrome_options.add_argument('--disable-gpu')
-        self.chrome_options.add_argument('--no-sandbox')
-        self.chrome_options.add_argument('--headless')
-        self.prefs = {'download.default_directory' : r'.\ESTOQUE'}
-        self.chrome_options.add_experimental_option('prefs', self.prefs)
+        #self.chrome_options.add_argument('--disable-extensions')
+        #self.chrome_options.add_argument('--disable-gpu')
+        #self.chrome_options.add_argument('--no-sandbox')
+        #self.chrome_options.add_argument('--headless')
+        #self.prefs = {'download.default_directory' : r'.\ESTOQUE'}
+        #self.chrome_options.add_experimental_option('prefs', self.prefs)
 
         #dados de usuario
         self.user = 'juba.rimbano@gmail.com'
@@ -47,12 +44,24 @@ class Login:
         self.xpath_btn_salvar = '//*[@id="botaoSalvar"]'
         self.xpath_valor_total = '//*[@id="divTotal"]'
 
-
+        
         #relatorios
         self.xpath_link_rel_estoque = 'https://www.bling.com.br/b/gerenciador.relatorio.php#view/82798'
         self.xpath_btn_relatorio = '//*[@id="exportRelatorioLnk"]'
         self.xpath_btn_salvar_relatorio = '/html/body/div[11]/div[3]/div/button[1]'
-    
+
+
+        #cadastro de produtos
+        self.xpath_link_cad_produtos = 'https://www.bling.com.br/produtos.php#list'
+        self.xpath_link_busca_produto = '//*[@id="pesquisa-mini"]'
+        self.xpath_link_abrir_produto = '//div[text()="datatable"]/following-sibling::table/tbody/tr'
+        self.xpath_link_fornecedores = '//*[@id="formProduto"]/div/div/div[2]/div[2]/ul/li[4]/a'
+        self.xpath_link_editar_fornecedor = '//*[@id="tabela_fornecedores"]/div/table/tbody/tr/td[6]/a[1]'    
+        self.xpath_link_preco_custo = '//*[@id="fornecedor_preco_custo"]'
+        self.xpath_link_btn_ok_fornecedor = '/html/body/div[23]/div[3]/div/button[1]' 
+        self.xpath_link_btn_salvar_produto = '//*[@id="botaoSalvar"]'
+
+
     def iniciar(self):
         self.browser = Chrome()
         self.browser.get(self.link1)
@@ -62,7 +71,10 @@ class Login:
         self.browser.find_element(By.XPATH, self.xpath_pass).send_keys(self.password)
         self.browser.find_element(By.XPATH, self.xpath_btn_login).click()
         sleep(4)
+      
+    def tela_de_pedidos(self):
         self.browser.get(self.link_pedidos)
+        sleep(2)
 
     def novo_pedido(self, nome):
         self.browser.find_element(By.XPATH, self.xpath_btn_novo_pedido).click()
@@ -82,7 +94,7 @@ class Login:
         self.browser.find_element(By.XPATH, xpath_valor).send_keys(str(valor).replace('.',','))
         sleep(0.3)
         self.browser.find_element(By.XPATH, self.xpath_novo_item).click()
-
+     
     def digitar_info_ped(self, oc):
         self.browser.find_element(By.XPATH, self.xpath_num_oc).send_keys(str(oc))
   
@@ -122,6 +134,37 @@ class Login:
     def fechar_browse(self):
         self.browser.close()
 
+    def cad_produtos(self):
+        self.browser.get(self.xpath_link_cad_produtos)  
+        sleep(4)
+
+    def capturar_id(self):
+        self.browser.find_element(By.XPATH, self.xpath_link_busca_produto).send_keys("RGCE94CRO") 
+        self.browser.find_element(By.XPATH, self.xpath_link_busca_produto).send_keys(Keys.ENTER)
+        sleep(2)
+        id = self.browser.find_element(By.ID, "datatable").find_element(By.CLASS_NAME, "tabela-listagem").find_element(By.TAG_NAME, "tbody").find_element(By.TAG_NAME, "tr").click()
+        return id
+        
+    def alterar_preco_custo_bling(self, codigo, valor):
+        
+        self.browser.find_element(By.XPATH, self.xpath_link_busca_produto).clear()
+        self.browser.find_element(By.XPATH, self.xpath_link_busca_produto).send_keys(codigo) 
+        self.browser.find_element(By.XPATH, self.xpath_link_busca_produto).send_keys(Keys.ENTER)
+        sleep(2)
+        self.browser.find_element(By.ID, "datatable").find_element(By.CLASS_NAME, "tabela-listagem").find_element(By.TAG_NAME, "tbody").find_element(By.TAG_NAME, "tr").click()
+        sleep(2)
+        self.browser.find_element(By.XPATH, self.xpath_link_fornecedores).click()
+        sleep(2)
+        self.browser.find_element(By.XPATH, self.xpath_link_editar_fornecedor).click()
+        sleep(2)
+        self.browser.find_element(By.XPATH, self.xpath_link_preco_custo).click()
+        self.browser.find_element(By.XPATH, self.xpath_link_preco_custo).send_keys(str(valor).replace('.',','))
+        sleep(3)
+        self.browser.find_element(By.CLASS_NAME, "call-to-action ui-button ui-corner-all ui-widget button-default").click()
+        sleep(3)
+        self.browser.find_element(By.XPATH, self.xpath_link_btn_salvar_produto).click()
+        sleep(2)
+
 start = Login()   
 
 def auto_estoque(window):
@@ -134,7 +177,7 @@ if __name__ == '__main__':
     layout = [[sg.Push(), sg.Button('Executar', button_color=('yellow', 'blue'), size=size_btn, font='bold'), sg.Push()]]
     layout += [[sg.Push(), sg.Multiline(key='-PRINT-', size=(55,20), autoscroll=True, reroute_stdout=True, write_only=True, reroute_cprint=True), sg.Push()]]
     layout += [[sg.Push(), sg.Cancel('Sair', button_color=('black', 'red'), size=size_btn, font='bold'), sg.Push()]],
-    window = sg.Window('Limpeza de Sistema', layout, finalize=True, keep_on_top=False,)
+    window = sg.Window('Teste Bling', layout, finalize=True, keep_on_top=False,)
                
     while True:
                 
